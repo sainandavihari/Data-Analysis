@@ -1,0 +1,151 @@
+---
+title: "Weather Data Analysis"
+author: "Sai Nanda Vihari"
+date: "2025-02-18"
+output: pdf_document
+---
+
+```{r setup, include=FALSE,warning=FALSE,message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Performing Weather Data Analysis on NYC Flights Departures using R
+
+
+```{r}
+# importing weather dataset using nycflights13 paackage
+#import.packages("nycflights13")
+library(nycflights13)
+library(ggplot2)
+head(weather)
+# Getting Top 5 rows from the dataset
+```
+```{r}
+#View column names
+colnames(weather)
+```
+
+```{r}
+#checking any null values are present or not
+sum(is.na(weather))
+```
+```{r}
+# removing these null values by omitting them
+weather <- na.omit(weather)
+```
+
+
+## Univarient analysis
+
+```{r}
+# Summary statistics for Temperature
+
+summary(weather$temp)
+
+```
+
+```{r}
+# Summary statistics for Humidity
+
+summary(weather$humid)
+
+```
+
+
+
+```{r}
+hist(weather$temp, 
+     main = "Histogram of Temperature", 
+     xlab = "Temperature (F)", 
+     col = "lightblue", 
+     border = "black")
+```
+
+```{r}
+# Using ggplot2, plotting the line plot of ‘temp’ as a function of ‘time_hour’
+ggplot(weather, aes(x = time_hour, y = temp)) + geom_line(color = "steelblue") +
+  labs(title = "NYC Departure Temperatures Over Time (2013)",
+       x = "Time (hrs)",
+       y = "Temp (F)")
+```
+
+```{r}
+hist(weather$humid, 
+     main = "Histogram of Humidity", 
+     xlab = "Humidity (%)", 
+     col = "lightgreen", 
+     border = "black")
+```
+
+
+## Bivarient Analysis
+
+```{r}
+# Scatter plot of Temperature vs Dew Point 
+plot(weather$temp, weather$dewp, 
+     main = "Temperature vs. Dew Point",
+     xlab = "Temperature (F)", 
+     ylab = "Dew Point (F)", 
+     col = "lightblue", 
+     pch = 19)
+```
+
+```{r}
+# Fit and add a regression line to the scatter plot
+plot(weather$temp, weather$dewp, 
+     main = "Temperature vs. Dew Point",
+     xlab = "Temperature (F)", 
+     ylab = "Dew Point (F)", 
+     col = "lightblue", 
+     pch = 19)
+abline(lm(dewp ~ temp, data = weather), col = "red")
+```
+
+```{r}
+# correlation between Temperature and Dew Point
+correlation <- cor(weather$temp, weather$dewp, use = "complete.obs")
+print(paste("Correlation between temperature and dew point:", round(correlation, 2)))
+```
+
+
+## Hypothesis Testing
+
+***Null and Alternative Hypothesis: *** 
+
+Null Hypothesis $H_0$: The true mean temperature of the dataset is 50°F.
+Alternative Hypothesis $H_A$:  The true mean temperature of the dataset is not equal to 50°F.
+
+***Normality Checking:***
+
+```{r}
+qqnorm(weather$temp, main = "QQ Plot of Temperature")
+qqline(weather$temp, col = "red")
+```
+From the above Q-Q plot, we can say that most of the tail points are deviated from the line .So we are doing  shapiro Wiki Test for further checking normality.
+
+```{r}
+set.seed(17122000)
+temp_sample <- sample(weather$temp, 500)
+shapiro_test_result <- shapiro.test(temp_sample)
+print(shapiro_test_result)
+```
+From the above test , P-value is greater than significant level $\alpha=0.05$ .So fail to reject null hypothesis . 
+So Normality is approximately satisfied.
+
+***Test Statistics:***
+
+```{r}
+t_test_result <- t.test(weather$temp, mu = 50)
+print(t_test_result)
+```
+
+***Decision Making:***
+From above Test Statistics ,  $P-Value=0.025$ is less than significant level $\alpha=0.05$ So Reject Null Hypothesis.
+
+***Conclusion:***
+We Can Conclude that The true mean temperature of the weather dataset is not equal to 50°F.
+
+
+
+
+
